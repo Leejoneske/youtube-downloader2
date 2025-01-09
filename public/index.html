@@ -1,1 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Video Downloader</title>
+  <style>
+    /* CSS Styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #videoPreview {
+      margin-top: 20px;
+    }
+
+    #videoPreview img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>YouTube Video Downloader</h1>
+    <form id="downloadForm">
+      <input type="text" id="videoUrl" placeholder="Enter YouTube Video URL" required>
+      <button type="submit">Get Video Info</button>
+    </form>
+    <div id="previewSection" class="hidden">
+      <div id="videoPreview"></div>
+      <button id="downloadVideoBtn">Download Video</button>
+      <button id="downloadAudioBtn">Download Audio</button>
+    </div>
+    <div id="loginSection" class="hidden">
+      <h2>Login Required</h2>
+      <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript Functionality
+    document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const videoUrl = document.getElementById('videoUrl').value;
+
+      try {
+        const response = await fetch('/api/getVideoInfo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videoUrl }),
+        });
+
+        const data = await response.json();
+
+        if (data.loginRequired) {
+          document.getElementById('loginSection').classList.remove('hidden');
+        } else {
+          document.getElementById('previewSection').classList.remove('hidden');
+          document.getElementById('videoPreview').innerHTML = `
+            <h3>${data.title}</h3>
+            <img src="${data.thumbnail}" alt="Video Thumbnail">
+          `;
+
+          document.getElementById('downloadVideoBtn').onclick = () => {
+            window.location.href = `/api/downloadVideo?videoUrl=${encodeURIComponent(videoUrl)}`;
+          };
+
+          document.getElementById('downloadAudioBtn').onclick = () => {
+            window.location.href = `/api/downloadAudio?videoUrl=${encodeURIComponent(videoUrl)}`;
+          };
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Simulate login (you can replace this with actual login logic)
+      alert(`Logged in as ${email}`);
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('previewSection').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
